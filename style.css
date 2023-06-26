@@ -23,8 +23,9 @@ body{
 
 }
 .gameTable{
+    position: relative;
     background-color: grey;
-    height: 100%;
+    height: 120%;
     width: 100%;
 
 }
@@ -35,3 +36,30 @@ body{
     display: none;
 }
 
+/* .gameList, .totalHands, .totalCards{
+   
+} */
+.gameSettings{
+    display: flex;
+    flex-direction: row;
+    
+    
+}
+.setup , .game_Start {
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    padding: 1%
+}
+/* .setup * {
+    margin-top: 2%;
+    height: 50%;
+    
+} */
+
+/* .game_Start *  {
+    margin-top: 2%;
+    height: 50%;
+    
+} */

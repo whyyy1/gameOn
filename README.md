@@ -4,4 +4,10 @@ Simple card game
 General Overview of running the card game. 
 
 
-card class 
+Card class 
+-takes in the suit and value of the card
+
+Deck Class
+-create deck function 
+-randomize function to randomize deck
+-draw card to add card to current players hand 
