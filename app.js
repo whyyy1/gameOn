@@ -15,7 +15,11 @@ const totalCardsSelector = document.querySelector('.totalCards');
 let game;
 let openHand = false;
 let closeHand; 
-
+//Total players and cards for each 
+let maxPlayers = 4;
+let maxCards = 13;
+// Game Deck
+let mainDeck;
 //fill the select tags with options 
 //Games List
 for (let game of gameList) {
@@ -25,9 +29,7 @@ for (let game of gameList) {
     gameSelector.appendChild(gameOption)
 
 }
-//Total players and cards for each 
-let maxPlayers = 4;
-let maxCards = 7;
+
 for (let userCount = 0; userCount < maxPlayers; userCount++) {
     // console.log(userCount)
     let totalPlayers = document.createElement('option')
@@ -61,6 +63,7 @@ class Deck {
         this.deck = [];
         this.hands = [];
         this.users = [];
+        this.discardPile = [];
         this.activeDeck = false;
     }
     //get deck function to create the deck
@@ -131,14 +134,15 @@ class Deck {
         let playerHand;
         let playerData;
         //get current user selected and add cards to there hand
-        for (let i in this.users) {
-            if (this.users[i] === player.name) {
+        for (let j in this.users) {
+            if (this.users[j] === player.name) {
                 let user = `.${player.name}`
                 playerData = document.querySelector(user)
-                playerHand = this.hands[i]
+                playerHand = this.hands[j]
             }
         }
         while (i < num) {
+            console.log(playerData,player)
             let addCard = this.deck.shift()
 
             let cardVal = document.createElement('img');
@@ -157,13 +161,141 @@ class Deck {
 
     }
 
+    removeCard(player,num){
+        let i = 0;
+        let playerHand;
+        let playerData;
+        //get current user selected and add cards to there hand
+        for (let j in this.users) {
+            if (this.users[j] === player.name) {
+                let user = `.${player.name}`
+                playerData = document.querySelector(user)
+                playerHand = this.hands[j]
+            }
+        }
+        while (i < num) {
+            
+            this.discardPile.push(playerData.lastChild);
+            playerData.removeChild(playerData.lastChild);
+            playerHand.pop()
+            console.log(`Hey player han: ${playerHand}`,this.discardPile,playerData)
+            
+            // playerData.removeChild(cardVal)
+            // console.log(playerHand.splice(playerHand.indexOf(addCard.mainValue),1))
+            // console.log(playerHand)
+
+            i++
+        }
+        
+
+    }
+
+
+}
+
+//////////Game logic/////////////////////////////
+class Game {
+    constructor(name, deck) {
+        this.name = name;
+        this.deck = deck;
+        this.continueTurn = true;
+        this.players = []
+        this.turn = 1;
+        this.dealer = 0;
+        this.maxTurn = 25;
+        this.playerBtn;
+        this.currentUser;
+    }
+
+    gameLogic() {
+
+
+        for (let users in this.deck.users) {
+            let player = {}
+            player['name'] = this.deck.users[users];
+            player['hand'] = this.deck.hands[users];
+            player['turn'] = false;
+            // console.log(deck.users[users],deck.hands[users])
+
+            this.players.push(player)
+
+        }
+
+        //set player 1 to first to go
+        this.players[this.dealer].turn = true;
+
+        let playersBtns = document.querySelectorAll('.handBtn')
+        for (let btn of playersBtns) {
+            if (btn.value === this.players[this.dealer].name){
+                this.playerBtn = btn
+                this.playerBtn.style.display = 'block'
+                // console.log(this.playerBtn)
+            }
+                
+        }
+        // console.log(this.players[this.dealer].name)
+        // if(this.turn = 1){
+        //     console.log(`${this.players[this.dealer].name} turn! ${this.turn}/${this.maxTurn} ${this.players.length}${this.dealer}`)
+        //     alert(`${this.players[this.dealer].name} turn! ${this.turn}/${this.maxTurn} ${this.players.length}${this.dealer}`)
+        // }
+        // check maxturns vs turn -allow user to do something and have boolean end turn condition
+        if (this.turn < this.maxTurn + 1) {
+            console.log(`${this.players[this.dealer].name} turn! ${this.turn}/${this.maxTurn} ${this.players.length}${this.dealer}`)
+            alert(`${this.players[this.dealer].name} turn! ${this.turn}/${this.maxTurn} ${this.players.length}${this.dealer}`)
+            this.currentUser = this.players[this.dealer];
+            this.playerTurn()
+
+
+        }
+
+
+    }
+    endTurn() {
+        // this.continueTurn = false;
+        this.playerBtn.style.display = 'none';
+        console.log(this.turn, this.maxTurn)
+        if (this.turn === this.maxTurn + 1) {
+            console.log('Game Over');
+            deckBtn.textContent = 'Start'
+            gameTable.innerHTML = ''
+            gameMenu.innerHTML = ''
+            mainDeck.activeDeck = false;
+            if (prompt('Wanna play again') === 'y') {
+
+                let newDeck = new Deck()
+                new Game('Game1', newDeck).gameLogic()
+
+            } else {
+                alert('Game Over')
+
+            }
+        }
+        if (this.dealer === this.players.length - 1) {
+            this.dealer = 0
+        } else {
+            this.dealer++;
+        }
+        this.turn++;
+        this.gameLogic()
+    }
+    playerTurn() {
+
+        if (this.turn === this.maxTurn) {
+            alert('LAST TURN')
+            this.turn++;
+            // break;
+        }
+
+
+    }
+
+
 
 }
 
 
 
-// Game Deck
-let mainDeck = new Deck();
+
 //////////Display logic/////////////////////////////
 //Display the get deck sign or reset sign 
 deckBtn.addEventListener('click', (event) => {
@@ -200,7 +332,8 @@ deckBtn.addEventListener('click', (event) => {
 
 //creates the deck and the and puts it on the playing field 
 dealBtn.addEventListener('click', (event) => {
-    console.log(totalCardsSelector.value, totalHandsSelector.value)
+    // console.log(totalCardsSelector.value, totalHandsSelector.value)
+    mainDeck = new Deck();
     mainDeck.createDeck()
 
     mainDeck.randomizeDeck()
@@ -308,7 +441,7 @@ gameTable.addEventListener('click', (event) => {
                 handContainer.classList.add('hand', 'hhand-compact', 'active-hand', `Player${count + 1}`);
                 playerShowHands.value = `Player${count + 1}`;
                 playerShowHands.classList.add('handBtn');
-                handContainer.style.backgroundColor = 'white';
+                // handContainer.style.backgroundColor = 'white';
                 userProfiles.push(playerShowHands.value);
 
                 handContainer.style.width = '25vw';
@@ -375,11 +508,11 @@ gameMenu.addEventListener('click', (event) => {
 
     let targetClass = `.${event.target.className}`
     
-    
+    // console.log(targetClass)
 
     //check if hand button  is clicked 
     if (targetClass === '.handBtn') {
-        console.log(openHand)
+        // console.log(openHand)
         let targetValue = `.${event.target.value}`
         
         if(!openHand || openHand){
@@ -394,26 +527,26 @@ gameMenu.addEventListener('click', (event) => {
         }
         closeHand = targetValue;
         openHand = true;
-        console.log(openHand)
+        // console.log(openHand)
         
     }
     
     //check if end turn is clicked 
     if (targetClass === '.endTurn') {
-        console.log(openHand)
+        // console.log(openHand)
         if(openHand){
             document.querySelector(closeHand).style.visibility = 'hidden';
             game.endTurn()
         }
         else{
-            console.log(targetClass)
+            // console.log(targetClass)
             game.endTurn()
         }
         
     }
 
     //check if start game clicked then start the game
-    if (event.target.className === 'startGame') {
+    if (targetClass === '.startGame') {
         // console.log(document.querySelector('.gameBoard'))
         document.querySelector('.endTurn').style.display = 'block';
         document.querySelector('.drawCard').style.display = 'block';
@@ -421,106 +554,26 @@ gameMenu.addEventListener('click', (event) => {
         game = new Game(gameSelector.value, mainDeck);
         game.gameLogic();
     }
+
+    //draw card 
+    if(targetClass === '.drawCard'){
+        
+        // console.log(game.currentUser.hand,game.deck)
+        game.deck.drawNumCard(game.currentUser,1)
+    }
+    if(targetClass === '.removeCard'){
+        
+        // console.log(game.currentUser.hand,game.deck)
+        
+        game.deck.removeCard(game.currentUser,1)
+    }
     
 })
 
-//////////Game logic/////////////////////////////
-class Game {
-    constructor(name, deck) {
-        this.name = name;
-        this.deck = deck;
-        this.continueTurn = true;
-        this.players = []
-        this.turn = 1;
-        this.dealer = 0;
-        this.maxTurn = 25;
-        this.playerBtn;
-    }
-
-    gameLogic() {
-
-
-        for (let users in this.deck.users) {
-            let player = {}
-            player['name'] = this.deck.users[users];
-            player['hand'] = this.deck.hands[users];
-            player['turn'] = false;
-            // console.log(deck.users[users],deck.hands[users])
-
-            this.players.push(player)
-
-        }
-
-        //set player 1 to first to go
-        this.players[this.dealer].turn = true;
-
-        let playersBtns = document.querySelectorAll('.handBtn')
-        for (let btn of playersBtns) {
-            if (btn.value === this.players[this.dealer].name){
-                this.playerBtn = btn
-                this.playerBtn.style.display = 'block'
-                console.log(this.playerBtn)
-            }
-                
-        }
-        // console.log(this.players[this.dealer].name)
-        // if(this.turn = 1){
-        //     console.log(`${this.players[this.dealer].name} turn! ${this.turn}/${this.maxTurn} ${this.players.length}${this.dealer}`)
-        //     alert(`${this.players[this.dealer].name} turn! ${this.turn}/${this.maxTurn} ${this.players.length}${this.dealer}`)
-        // }
-        // check maxturns vs turn -allow user to do something and have boolean end turn condition
-        if (this.turn < this.maxTurn + 1) {
-            console.log(`${this.players[this.dealer].name} turn! ${this.turn}/${this.maxTurn} ${this.players.length}${this.dealer}`)
-            alert(`${this.players[this.dealer].name} turn! ${this.turn}/${this.maxTurn} ${this.players.length}${this.dealer}`)
-            this.playerTurn()
-
-
-        }
-
-
-    }
-    endTurn() {
-        // this.continueTurn = false;
-        this.playerBtn.style.display = 'none';
-        console.log(this.turn, this.maxTurn)
-        if (this.turn === this.maxTurn + 1) {
-            console.log('Game Over');
-            deckBtn.textContent = 'Start'
-            gameTable.innerHTML = ''
-            gameMenu.innerHTML = ''
-            mainDeck.activeDeck = false;
-            if (prompt('Wanna play again') === 'y') {
-
-                let newDeck = new Deck()
-                new Game('Game1', newDeck).gameLogic()
-
-            } else {
-                alert('Game Over')
-
-            }
-        }
-        if (this.dealer === this.players.length - 1) {
-            this.dealer = 0
-        } else {
-            this.dealer++;
-        }
-        this.turn++;
-        this.gameLogic()
-    }
-    playerTurn() {
-
-        if (this.turn === this.maxTurn) {
-            alert('LAST TURN')
-            this.turn++;
-            // break;
-        }
-
-
-    }
 
 
 
-}
 
 
+//
 
