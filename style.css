@@ -48,7 +48,7 @@ body{
 .setup , .game_Start {
     
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     justify-content: space-evenly;
     padding: 1%
 }
